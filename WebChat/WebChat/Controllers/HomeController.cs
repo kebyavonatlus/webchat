@@ -14,9 +14,9 @@ namespace WebChat.Controllers
     public class HomeController : Controller
     {
         private readonly IChatService _chatRepository;
-        public HomeController(IChatService _chatRepository)
+        public HomeController(IChatService chatRepository)
         {
-            this._chatRepository = _chatRepository;
+            this._chatRepository = chatRepository;
         }
         [Authorize]
         public ActionResult Chat()

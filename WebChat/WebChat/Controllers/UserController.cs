@@ -17,11 +17,11 @@ namespace WebChat.Controllers
         private readonly IChatService _chatRepository;
         private readonly IUserRepository _userRepository;
 
-        public UserController(IUserRepository _repository, IChatService _chatRepository, IUserRepository _userRepository)
+        public UserController(IUserRepository repository, IChatService chatRepository, IUserRepository userRepository)
         {
-            this._repository = _repository;
-            this._chatRepository = _chatRepository;
-            this._userRepository = _userRepository;
+            this._repository = repository;
+            this._chatRepository = chatRepository;
+            this._userRepository = userRepository;
         }
         // GET: User
         [HttpGet]

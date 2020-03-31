@@ -1,9 +1,11 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Web.DynamicData;
 using WebChat.Enums;
 
 namespace WebChat.Entity
 {
+    [TableName("ConnectionInfo")]
     public class ConnectionInfo
     {
         [Key]
