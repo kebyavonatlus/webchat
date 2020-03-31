@@ -1,0 +1,134 @@
+﻿@{
+    ViewBag.Title = "Сообщения";
+}
+<style>
+    .cont {
+        border: 2px solid #dedede;
+        background-color: #f1f1f1;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+
+    .darker {
+        border-color: #ccc;
+        background-color: #ddd;
+    }
+
+    .time-right {
+        float: right;
+        color: #aaa;
+    }
+
+    div.textareaForMessages {
+        border-radius: 5px;
+        background: #F2F5F8;
+        width: 100%;
+        height: 400px;
+        overflow: auto;
+    }
+
+    div.users {
+        border-radius: 5px;
+        background: #F2F5F8;
+        width: 100%;
+        height: 400px;
+        overflow: auto;
+    }
+
+    div.users > ul {
+        list-style-type: none;
+        margin: 0px;
+        padding: 5px 0 5px 5px;
+    }
+
+    div.users > ul > li {
+        list-style-type: none;
+        margin: 0px;
+        padding: 0px;
+    }
+
+    #TxtMessage {
+        resize: vertical;
+        max-width: 100% !important;
+    }
+</style>
+
+@*<div class="textareaForMessages" id="Chats">
+
+    </div>*@
+<div class="row">
+    <div class="col-md-10">
+        <h3>Сообщения чата</h3>
+        <p>@User.Identity.Name</p>
+        <div class="textareaForMessages" id="Chats"></div>
+        <textarea class="form-control" id="TxtMessage" rows="4" cols="50" placeholder="Введите сообщение" required="required"></textarea>
+        <input type="button" class="btn btn-success" id="BtnSend" value="Отправить сообщение" />
+    </div>
+    <div class="col-md-2">
+        <h3>Онлайн</h3>
+        <div class="users">
+            <ul id="onlineUsers">
+            </ul>
+        </div>
+    </div>
+</div>
+@section scripts {
+    <script src="~/Scripts/jquery.signalR-2.4.1.min.js"></script>
+    <script src="~/signalr/Hubs"></script>
+
+    <script>
+    $(function() {
+        $.ajax({
+            url: '@Url.Action("GetMessages", "User")',
+            contentType: 'application/json',
+            type: 'GET',
+            success: function (data) {
+                AddMessages(data);
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        });
+        var chat = $.connection.chatHub;
+        chat.client.SendAsync = function (name, message, messageDate) {
+            if(message.trim() === '')
+            {
+                alert("Поле сообщения не должно быть пустым.");
+                return;
+            }
+            AddMessage(name, message, messageDate);
+        };
+
+        chat.client.onConnected = function(userId, userName, allUsers) {
+            for (i = 0; i < allUsers.length; i++) {
+                if (allUsers[i].UserName !== userName) {
+                    AddUser(allUsers[i].UserId, allUsers[i].UserName);
+                }
+            }
+        }
+
+        chat.client.onDisconnect = function() {
+            chat.client.onUserDisconnected = function (userId, UserName) {
+                $('#' + userId).remove();
+            }
+        }
+
+        // Добавляем нового пользователя
+        chat.client.onNewUserConnected = function (userId, name) {
+            AddUser(userId, name);
+        }
+
+
+        $('#TxtMessage').focus();
+        $.connection.hub.start().done(function () {
+            chat.server.connect('@User.Identity.Name');
+            $('#BtnSend').click(function() {
+                chat.server.letsChat('@User.Identity.Name', $('#TxtMessage').val());
+                $('#TxtMessage').val('').focus();
+            });
+        });
+    });
+
+    </script>
+}

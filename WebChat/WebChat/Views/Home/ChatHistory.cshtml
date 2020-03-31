@@ -1,0 +1,97 @@
+﻿
+@{
+    ViewBag.Title = "ChatHistory";
+}
+
+<style>
+    .searchData {
+        margin: 10px 0 10px 0;
+        text-align: center;
+    }
+
+    .searchData input {
+        padding: 4px 10px;
+        border: 1px solid dimgray;
+        border-radius: 4px;
+    }
+
+</style>
+
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.css">
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="searchData">
+            <input type="date" id="startDate" name="startDate">
+            <input type="date" id="endDate" name="endDate">
+            <button class="btn btn-info" onclick="LoadData()">Сформировать</button>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <table id="display" class="table table-striped table-bordered">
+            <thead>
+            <tr>
+                <th>Пользователь</th>
+                <th>Сообщение</th>
+                <th>Дата сообщения</th>
+            </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+
+@section scripts {
+    <script>
+        var dataTable = $('#display').DataTable({
+            "language": {
+                "lengthMenu": "Показать _MENU_ записей на страницу",
+                "zeroRecords": "Не загруженных записей",
+                "info": "Показ страницы _PAGE_ из _PAGES_",
+                "infoEmpty": "Не загруженных записей",
+                "infoFiltered": "(filtered from _MAX_ total records)",
+                "paginate": {
+                    "next": "Следующая",
+                    "previous" : "Предыдущая"
+                },
+                "search": "Поиск:"
+            },
+            ordering : true,
+            processing: true,
+            'ajax': {
+                url: '@Url.Action("GetMessages", "Home")',
+                type: 'POST',
+                data: function(formData) {
+                    formData.StartDate = $('#startDate').val();
+                    formData.EndDate = $('#endDate').val();
+                },
+                "dataSrc": function (data) {
+                    var returnData = new Array();
+                    for(var i=0;i< data.length; i++) {
+                        returnData.push({
+                            "UserName": data[i].UserName,
+                            "Content": data[i].Content,
+                            "MessageDate": moment(data[i].MessageDate).format('DD.MM.YYYY HH:mm:ss')
+                        });
+                    }
+                    return returnData;
+                }
+            },
+            'columns': [
+                { "data": "UserName" },
+                { "data": "Content" },
+                { "data": "MessageDate" }
+            ]
+        });
+
+        function LoadData() {
+            dataTable.ajax.reload();
+        }
+    </script>
+
+}
