@@ -1,4 +1,5 @@
-﻿using WebChat.Models.User;
+﻿using System.Collections.Generic;
+using WebChat.Models.User;
 
 namespace WebChat.Services.User
 {
@@ -7,6 +8,8 @@ namespace WebChat.Services.User
         void UserRegister(RegisterModel register);
         Entity.User UserIsExist(string userName);
         Entity.User UserLogin(Entity.User user);
+
+        List<Entity.User> GetAllUsers();
 
     }
 }

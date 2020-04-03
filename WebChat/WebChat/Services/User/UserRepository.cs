@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -51,6 +52,14 @@ namespace WebChat.Services.User
             {
                 var password = GetHashCodeMd5(user.Password);
                 return context.Users.FirstOrDefault(u => u.UserName == user.UserName && u.Password == password);
+            }
+        }
+
+        public List<Entity.User> GetAllUsers()
+        {
+            using (var db = new ChatContext())
+            {
+                return db.Users.ToList();
             }
         }
 
