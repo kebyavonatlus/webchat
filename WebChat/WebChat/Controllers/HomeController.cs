@@ -8,15 +8,18 @@ using System.Web.Script.Services;
 using WebChat.Entity;
 using WebChat.ResourceParameters;
 using WebChat.Services.Chat;
+using WebChat.Services.User;
 
 namespace WebChat.Controllers
 {
     public class HomeController : Controller
     {
         private readonly IChatService _chatRepository;
-        public HomeController(IChatService chatRepository)
+        private readonly IUserRepository _userRepository;
+        public HomeController(IChatService chatRepository, IUserRepository userRepository)
         {
-            this._chatRepository = chatRepository;
+            _chatRepository = chatRepository;
+            _userRepository = userRepository;
         }
         [Authorize]
         public ActionResult Chat()
@@ -28,13 +31,14 @@ namespace WebChat.Controllers
         [HttpGet]
         public ActionResult ChatHistory()
         {
+            ViewBag.Users = _userRepository.GetAllUsers();
             return View();
         }
 
         [HttpPost]
         public JsonResult GetMessages(MessagesParameters messagesParameters)
         {
-            var result = _chatRepository.GetMessages(messagesParameters.StartDate, messagesParameters.EndDate);
+            var result = _chatRepository.GetMessages(messagesParameters.UserId, messagesParameters.StartDate, messagesParameters.EndDate);
             return Json(result, JsonRequestBehavior.AllowGet);
         }
     }

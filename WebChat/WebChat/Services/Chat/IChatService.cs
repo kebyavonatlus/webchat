@@ -12,6 +12,6 @@ namespace WebChat.Services.Chat
         void AddMessage(MessageLog message);
         void AddInfo(ConnectionInfo info);
         List<MessageModel> GetMessages();
-        List<MessageModel> GetMessages(DateTime startDate, DateTime endDate);
+        List<MessageModel> GetMessages(int? UserId, DateTime startDate, DateTime endDate);
     }
 }

@@ -40,20 +40,36 @@ namespace WebChat.Services.Chat
             }
         }
 
-        public List<MessageModel> GetMessages(DateTime startDate, DateTime endDate)
+        public List<MessageModel> GetMessages(int? userId, DateTime startDate, DateTime endDate)
         {
             using (var db = new ChatContext())
             {
+                if (userId != null)
+                {
+                    var userResult = from message in db.MessageLogs
+                        join user in db.Users on message.UserId equals user.UserId
+                        where (DbFunctions.TruncateTime(message.MessageDate) >= startDate &&
+                               DbFunctions.TruncateTime(message.MessageDate) <= endDate) && user.UserId == userId
+                        select new MessageModel
+                        {
+                            UserName = user.FullName,
+                            UserId = user.UserId,
+                            MessageDate = message.MessageDate,
+                            Content = message.Content
+                        };
+                    return userResult.ToList();
+                }
                 var result = from message in db.MessageLogs
-                             join user in db.Users on message.UserId equals user.UserId
-                             where DbFunctions.TruncateTime(message.MessageDate) >= DbFunctions.TruncateTime(startDate) && DbFunctions.TruncateTime(message.MessageDate) <= DbFunctions.TruncateTime(endDate)
-                             select new MessageModel
-                             {
-                                 UserName = user.FullName,
-                                 UserId = user.UserId,
-                                 MessageDate = message.MessageDate,
-                                 Content = message.Content
-                             };
+                    join user in db.Users on message.UserId equals user.UserId
+                    where (DbFunctions.TruncateTime(message.MessageDate) >= startDate &&
+                           DbFunctions.TruncateTime(message.MessageDate) <= endDate)
+                    select new MessageModel
+                    {
+                        UserName = user.FullName,
+                        UserId = user.UserId,
+                        MessageDate = message.MessageDate,
+                        Content = message.Content
+                    };
                 return result.ToList();
             }
         }

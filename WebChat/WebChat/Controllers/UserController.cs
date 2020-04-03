@@ -92,5 +92,16 @@ namespace WebChat.Controllers
             return Json(result, JsonRequestBehavior.AllowGet);
         }
 
+        public JsonResult GetUserName(string userName)
+        {
+            var user = _userRepository.UserIsExist(userName);
+            if (user == null)
+            {
+                return Json(new {statusCode = 404, Message = "Пользователь не найден."});
+            }
+
+            return Json(new { userName = user.FullName, userId = user.UserId }, JsonRequestBehavior.AllowGet);
+        }
+
     }
 }

@@ -5,7 +5,7 @@ namespace WebChat.Entity
     public class User
     {
         [Key]
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
 
         [Required(ErrorMessage = "Заполните поле \"Логин\" ")]
         [MaxLength(50)]

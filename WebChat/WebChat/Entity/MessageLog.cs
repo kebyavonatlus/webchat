@@ -7,7 +7,7 @@ namespace WebChat.Entity
     {
         [Key]
         public int MessageId { get; set; }
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
         public string Content { get; set; }
         public DateTime MessageDate { get; set; }
     }

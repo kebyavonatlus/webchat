@@ -1,6 +1,6 @@
 ﻿
 @{
-    ViewBag.Title = "ChatHistory";
+    ViewBag.Title = "История";
 }
 
 <style>
@@ -9,23 +9,27 @@
         text-align: center;
     }
 
-    .searchData input {
-        padding: 4px 10px;
-        border: 1px solid dimgray;
-        border-radius: 4px;
-    }
 
 </style>
 
-
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.css">
-<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
-
+<link href="~/Content/jquery.dataTables.css" rel="stylesheet" />
+<link href="~/Content/bootstrap.min.css" rel="stylesheet" />
 <div class="row">
     <div class="col-md-12">
-        <div class="searchData">
-            <input type="date" id="startDate" name="startDate">
-            <input type="date" id="endDate" name="endDate">
+        <div class="searchData form-inline">
+            <div class="form-group">
+                <label for="UserId">Пользователи</label>
+                @Html.DropDownList("userId", new SelectList(ViewBag.Users, "UserId", "FullName"), "Выберите пользователя", new { @class = "form-control UserId", @required = "required", @id = "UserId" })
+            </div>
+            <div class="form-group">
+                <label for="startDate">Дата начала</label>
+                <input class="form-control" type="date" id="startDate" name="startDate">
+            </div>
+
+            <div class="form-group">
+                <label for="endDate">Дата окончания</label>
+                <input class="form-control" type="date" id="endDate" name="endDate">
+            </div>
             <button class="btn btn-info" onclick="LoadData()">Сформировать</button>
         </div>
     </div>
@@ -66,7 +70,8 @@
             'ajax': {
                 url: '@Url.Action("GetMessages", "Home")',
                 type: 'POST',
-                data: function(formData) {
+                data: function (formData) {
+                    formData.UserId = $('#UserId').children("option:selected").val();
                     formData.StartDate = $('#startDate').val();
                     formData.EndDate = $('#endDate').val();
                 },
