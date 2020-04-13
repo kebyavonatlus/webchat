@@ -93,7 +93,12 @@
                 self.newMessages = ko.observableArray();
                 self.message = ko.observable();
                 self.userName = ko.observable();
-                chat.client.SendAsync = function(name, message, messageDate) {
+                chat.client.SendAsync = function (name, message, messageDate) {
+                    message = message.trim();
+                    if (message === '') {
+                        alert("Сообщение не может быть пустым.")
+                        return;
+                    }
                     var newMessage = {
                         UserName: name + ':',
                         Content: message,
@@ -124,7 +129,11 @@
                 }
 
                 // кнопка для отправки сообщения
-                self.AddMessage = function() {
+                self.AddMessage = function () {
+                    if (self.message() === undefined) {
+                        alert("Сообщение не может быть пустым.");
+                        return;
+                    }
                     chat.server.letsChat('@User.Identity.Name', self.message());
                     self.message("");
                 }
