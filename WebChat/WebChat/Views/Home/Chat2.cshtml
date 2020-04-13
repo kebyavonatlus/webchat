@@ -1,0 +1,195 @@
+﻿@{
+    ViewBag.Title = "Сообщения";
+}
+<style>
+    .cont {
+        border: 2px solid #dedede;
+        background-color: #f1f1f1;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+
+    .darker {
+        border-color: #ccc;
+        background-color: #ddd;
+    }
+
+    .time-right {
+        float: right;
+        color: #aaa;
+    }
+
+    div.textareaForMessages {
+        border-radius: 5px;
+        background: #F2F5F8;
+        width: 100%;
+        height: 400px;
+        overflow: auto;
+    }
+
+    div.users {
+        border-radius: 5px;
+        background: #F2F5F8;
+        width: 100%;
+        height: 400px;
+        overflow: auto;
+    }
+
+    div.users > ul {
+        list-style-type: none;
+        margin: 0px;
+        padding: 5px 0 5px 5px;
+    }
+
+    div.users > ul > li {
+        list-style-type: none;
+        margin: 0px;
+        padding: 0px;
+    }
+
+    #TxtMessage {
+        resize: vertical;
+        max-width: 100% !important;
+    }
+</style>
+<div class="row">
+    <div class="col-md-12">
+        <h4>Добро пожаловать, <span data-bind="text: userName"></span></h4>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-10">
+        <h3>Сообщения чата</h3>
+        <div data-bind="foreach: newMessages" class="textareaForMessages" id="Chats">
+            <div class="cont darker">
+                <strong data-bind="text: UserName"> </strong>
+                <span data-bind="text: Content"></span>
+                <span data-bind="text: messageDate" class="time-right"></span>
+            </div>
+        </div>
+        <textarea data-bind="value: message,valueUpdate: 'input', executeOnEnter: AddMessage" class="form-control" id="TxtMessage" rows="4" cols="50" placeholder="Введите сообщение" required="required"></textarea>
+        <input data-bind="click: AddMessage" type="button" class="btn btn-success" value="Отправить сообщение" />
+    </div>
+    <div class="col-md-2">
+        <h3>Онлайн</h3>
+        <div class="users">
+            <ul data-bind="foreach: onlineUsers" id="onlineUsers">
+                <li data-bind="text: UserName"></li>
+            </ul>
+        </div>
+    </div>
+</div>
+@section scripts {
+    <script src="~/Scripts/jquery.signalR-2.4.1.min.js"></script>
+    <script src="~/signalr/Hubs"></script>
+
+    <script>
+        $(function() {
+            var chatViewModel = function(chatHub) {
+                var chat = chatHub;
+                self = this;
+                self.onlineUsers = ko.observableArray();
+                self.newMessages = ko.observableArray();
+                self.message = ko.observable();
+                self.userName = ko.observable();
+                chat.client.SendAsync = function(name, message, messageDate) {
+                    var newMessage = {
+                        UserName: name + ':',
+                        Content: message,
+                        messageDate: moment(messageDate).format('DD.MM.YYYY HH:mm:ss')
+                    };
+                    self.newMessages.push(newMessage);
+                }
+
+                chat.client.onConnected = function (userId, userName, allUsers) {
+                    for (i = 0; i < allUsers.length; i++) {
+                        if (allUsers[i].UserName !== userName) {
+                            self.onlineUsers.push({ UserName: allUsers[i].UserName, UserId: allUsers[i].UserId });
+                        }
+                    }
+                    var data = self.onlineUsers().slice(0);
+                    self.onlineUsers([]);
+                    self.onlineUsers(data);
+                }
+
+                // выполняется если пользователь покинул станицу
+                chat.client.onUserDisconnected = function (userId, UserName) {
+                    var deleteUser = ko.utils.arrayFirst(self.onlineUsers(),function(item) {
+                        return item.UserId === userId;
+                    });
+                    if (deleteUser != null) {
+                        self.onlineUsers.remove(deleteUser);
+                    }
+                }
+
+                // кнопка для отправки сообщения
+                self.AddMessage = function() {
+                    chat.server.letsChat('@User.Identity.Name', self.message());
+                    self.message("");
+                }
+
+                // стартует чат
+                self.start = function() {
+                    $.connection.hub.start().done(function() {
+                        chat.server.connect('@User.Identity.Name');
+                    });
+                }();
+
+                // вызывается при входе нового пользователя
+                chat.client.onNewUserConnected = function (userId, name) {
+                    var onlineUser = ko.utils.arrayFirst(self.onlineUsers(),function(item) {
+                        return item.UserId === userId;
+                    });
+                    if (onlineUser === undefined) {
+                        self.onlineUsers.push({ UserName: name, UserId: userId });
+                    }
+                }
+
+                // получает все сообщения
+                self.getMessages = function() {
+                    $.ajax({
+                        url: '@Url.Action("GetMessages", "User")',
+                        type: "POST",
+                        success: function(data) {
+                            for (var i = 0; i < data.length; i++) {
+                                self.newMessages.push({
+                                    UserName: data[i].UserName + ':',
+                                    Content: data[i].Content,
+                                    messageDate: moment(data[i].MessageDate).format('DD.MM.YYYY HH:mm:ss')
+                                });
+                            };
+                        }
+                    });
+                }();
+
+                // получает полное имя пользователя
+                self.GetUserName = function() {
+                    $.ajax({
+                        url: '@Url.Action("GetUserName", "User")' + '?userName=' + '@User.Identity.Name',
+                        type: "GET",
+                        success: function (data) {
+                            self.userName(data.userName);
+                        }
+                    });
+                }();
+            }
+
+            ko.bindingHandlers.executeOnEnter = {
+                init: function(element, valueAccessor, allBindings, chatViewModel) {
+                    var callback = valueAccessor();
+                    $(element).keypress(function(event) {
+                        var keyCode = (event.which ? event.which : event.keyCode);
+                        if (keyCode === 13) {
+                            callback.call(chatViewModel);
+                            return false;
+                        }
+                        return true;
+                    });
+                }
+            }
+
+            ko.applyBindings(new chatViewModel($.connection.chatHub));
+        });
+    </script>
+}

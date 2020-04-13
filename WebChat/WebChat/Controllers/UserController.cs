@@ -43,7 +43,7 @@ namespace WebChat.Controllers
                     if (user != null)
                     {
                         FormsAuthentication.SetAuthCookie(register.UserName, true);
-                        return RedirectToAction("Chat", "Home");
+                        return RedirectToAction("Chat2", "Home");
                     }
                 }
                 else
@@ -75,7 +75,7 @@ namespace WebChat.Controllers
                 if (returnUser != null)
                 {
                     FormsAuthentication.SetAuthCookie(returnUser.UserName, true);
-                    return RedirectToAction("Chat", "Home");
+                    return RedirectToAction("Chat2", "Home");
                 }
                 else
                 {

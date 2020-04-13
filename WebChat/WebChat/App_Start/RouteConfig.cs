@@ -16,7 +16,7 @@ namespace WebChat
             routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",
-                defaults: new { controller = "Home", action = "Chat", id = UrlParameter.Optional }
+                defaults: new { controller = "Home", action = "Chat2", id = UrlParameter.Optional }
             );
         }
     }

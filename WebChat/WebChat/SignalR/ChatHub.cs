@@ -62,7 +62,7 @@ namespace WebChat.SignalR
                 _chatRepository.AddInfo(newOnlineUser);
                 // Send the current users
                 Clients.Caller.onConnected(clientId, u.FullName, _users);
-                Clients.AllExcept(clientId).onNewUserConnected(clientId, u.FullName);
+                Clients.AllExcept(clientId).onNewUserConnected(u.UserId, u.FullName);
             }
             else
             {

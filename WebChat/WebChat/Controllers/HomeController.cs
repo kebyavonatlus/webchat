@@ -28,6 +28,12 @@ namespace WebChat.Controllers
         }
 
         [Authorize]
+        public ActionResult Chat2()
+        {
+            return View();
+        }
+
+        [Authorize]
         [HttpGet]
         public ActionResult ChatHistory()
         {
@@ -40,6 +46,16 @@ namespace WebChat.Controllers
         {
             var result = _chatRepository.GetMessages(messagesParameters.UserId, messagesParameters.StartDate, messagesParameters.EndDate);
             return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+        public ActionResult ChatHistory2()
+        {
+            return View();
+        }
+
+        public JsonResult GetAllUsers()
+        {
+            return Json(_userRepository.GetAllUsers(), JsonRequestBehavior.AllowGet);
         }
     }
 }

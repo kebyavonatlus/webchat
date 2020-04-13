@@ -1,0 +1,117 @@
+﻿
+@{
+    ViewBag.Title = "ChatHistory 2";
+}
+
+<h2>chat1</h2>
+<div class="row">
+    <div class="col-md-12">
+        <div class="searchData form-inline">
+            <div class="form-group">
+                <label for="UserId">Пользователи</label>
+                <select data-bind="options: allUsers,optionsText: 'FullName', optionsValue: 'UserId', selectedOptions: chosenUser, optionsCaption: 'Выберите пользователя'" class="form-control"></select>
+            </div>
+            <div class="form-group">
+                <label for="startDate">Дата начала</label>
+                <input data-bind="value: startDate" class="form-control" type="date" id="startDate" name="startDate">
+            </div>
+
+            <div class="form-group">
+                <label for="endDate">Дата окончания</label>
+                <input data-bind="value: endDate" class="form-control" type="date" id="endDate" name="endDate">
+            </div>
+            <button data-bind="click: GetMassages" class="btn btn-info">Сформировать</button>
+        </div>
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-md-12">
+        <table id="display" class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Пользователь</th>
+                    <th>Сообщение</th>
+                    <th>Дата сообщения</th>
+                </tr>
+            </thead>
+            <tbody data-bind="foreach: currentMessages">
+                <tr>
+                    <td data-bind="text: UserName"></td>
+                    <td data-bind="text: Content"></td>
+                    <td data-bind="text: MessageDate"></td>
+                </tr>
+            </tbody>
+        </table>
+        <button data-bind="click: previousPage" class="btn btn-secondary">Пердыдущая</button>
+        <span data-bind="text: currentPage" class="btn btn-outline-info"></span>
+        <button data-bind="click: nextPage" class="btn btn-secondary">Следующая</button>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        function messagesViewModel() {
+            var self = this;
+            var parameters = {
+                UserId: '',
+                StartDate: '',
+                EndDate: ''
+            };
+
+            self.allUsers = ko.observableArray();
+            self.chosenUser = ko.observableArray();
+            self.startDate = ko.observable();
+            self.endDate = ko.observable();
+            self.allMessages = ko.observableArray();
+
+            self.getAllUsers = function() {
+                $.getJSON('@Url.Action("GetAllUsers", "Home")',
+                    function(data) {
+                        self.allUsers(data);
+                    });
+            }();
+
+            self.GetMassages = function () {
+                parameters.UserId = self.chosenUser();
+                parameters.StartDate = self.startDate();
+                parameters.EndDate = self.endDate();
+                $.ajax({
+                    url: '@Url.Action("GetMessages")',
+                    type: "POST",
+                    data: parameters,
+                    success: function(data) {
+                        var returnData = new Array();
+                        for (var i = 0; i < data.length; i++) {
+                            returnData.push({
+                                "UserName": data[i].UserName,
+                                "Content": data[i].Content,
+                                "MessageDate": moment(data[i].MessageDate).format('DD.MM.YYYY HH:mm:ss')
+                            });
+                        }
+                        self.allMessages(returnData);
+                    }
+                });
+            }
+
+            self.pageSize = 5;
+            self.currentPage = ko.observable(1);
+            self.currentMessages = ko.computed(function() {
+                var startIndex = (self.currentPage() - 1) * self.pageSize;
+                var endIndex = startIndex + self.pageSize;
+                return self.allMessages.slice(startIndex, endIndex);
+            });
+            self.nextPage = function () {
+                if (self.currentMessages() < self.currentPage()) return;
+                self.currentPage(self.currentPage() + 1);
+            }
+
+            self.previousPage = function () {
+                if (self.currentPage() <= 1) return;
+                self.currentPage(self.currentPage() - 1);
+            }
+        }
+
+        ko.applyBindings(new messagesViewModel());
+    </script>
+}
