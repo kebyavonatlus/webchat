@@ -113,9 +113,6 @@
                             self.onlineUsers.push({ UserName: allUsers[i].UserName, UserId: allUsers[i].UserId });
                         }
                     }
-                    var data = self.onlineUsers().slice(0);
-                    self.onlineUsers([]);
-                    self.onlineUsers(data);
                 }
 
                 // выполняется если пользователь покинул станицу
